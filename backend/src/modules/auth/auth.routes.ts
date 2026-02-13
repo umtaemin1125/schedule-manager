@@ -1,6 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import type { SignOptions } from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../../config/env.js";
 import { requireAuth } from "../../middleware/auth.js";
@@ -59,9 +60,11 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ message: "이메일 또는 비밀번호가 올바르지 않습니다." });
   }
 
-  const token = jwt.sign({ userId: user.id, email: user.email }, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRES_IN
-  });
+  const signOptions: SignOptions = {
+    expiresIn: env.JWT_EXPIRES_IN as SignOptions["expiresIn"]
+  };
+
+  const token = jwt.sign({ userId: user.id, email: user.email }, env.JWT_SECRET, signOptions);
 
   return res.json({
     accessToken: token,
