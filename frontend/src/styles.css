@@ -1,0 +1,25 @@
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top right, #d8f3fa 0%, #f7fbfc 45%, #f7fbfc 100%);
+}
+
+.auth-layout {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 16px 40px rgba(10, 77, 104, 0.14);
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.2rem;
+}
