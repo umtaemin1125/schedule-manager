@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AppBar,
   Box,
@@ -38,6 +38,7 @@ export default function BoardPage() {
   const [editing, setEditing] = useState<BoardPost | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const quillRef = useRef<ReactQuill | null>(null);
   const [type, setType] = useState<"NOTICE" | "FREE">("FREE");
 
   const canCreateNotice = user?.role === "ADMIN";
@@ -62,7 +63,31 @@ export default function BoardPage() {
       [{ align: [] }],
       ["link", "image"],
       ["clean"]
-    ]
+    ],
+    handlers: {
+      image: async () => {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/*");
+        input.click();
+
+        input.onchange = async () => {
+          const file = input.files?.[0];
+          if (!file) return;
+
+          const form = new FormData();
+          form.append("image", file);
+          const res = await api.post<{ url: string }>("/board/uploads", form, {
+            headers: { "Content-Type": "multipart/form-data" }
+          });
+
+          const editor = quillRef.current?.getEditor();
+          if (!editor) return;
+          const range = editor.getSelection(true);
+          editor.insertEmbed(range?.index ?? 0, "image", res.data.url);
+        };
+      }
+    }
   };
 
   return (
@@ -112,7 +137,14 @@ export default function BoardPage() {
                 return (
                   <Box key={post.id} sx={{ p: 2, border: "1px solid #eceff3", borderRadius: 3 }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>{post.title}</Typography>
+                      <Typography
+                        component={RouterLink}
+                        to={`/board/${post.id}`}
+                        variant="h6"
+                        sx={{ fontWeight: 700, color: "#111", textDecoration: "none" }}
+                      >
+                        {post.title}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {post.user.name} · {new Date(post.createdAt).toLocaleString()}
                       </Typography>
@@ -174,7 +206,7 @@ export default function BoardPage() {
               <MenuItem value="NOTICE">공지사항</MenuItem>
               <MenuItem value="FREE">자유게시판</MenuItem>
             </TextField>
-            <ReactQuill theme="snow" value={content} onChange={setContent} modules={modules} />
+            <ReactQuill ref={quillRef} theme="snow" value={content} onChange={setContent} modules={modules} />
           </Stack>
         </DialogContent>
         <DialogActions>

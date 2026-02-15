@@ -1,9 +1,36 @@
 import { Router } from "express";
+import type { Request } from "express";
+import fs from "fs";
+import path from "path";
+import multer from "multer";
 import sanitizeHtml from "sanitize-html";
 import { z } from "zod";
 import { prisma } from "../../utils/prisma.js";
 
 const router = Router();
+const uploadDir = path.resolve(process.cwd(), "uploads");
+fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req: Request, _file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) =>
+    cb(null, uploadDir),
+  filename: (_req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
+    const ext = path.extname(file.originalname) || ".png";
+    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    if (!file.mimetype.startsWith("image/")) {
+      cb(new Error("이미지 파일만 업로드할 수 있습니다."));
+      return;
+    }
+    cb(null, true);
+  }
+});
 
 const boardTypeSchema = z.enum(["NOTICE", "FREE"]);
 
@@ -81,6 +108,22 @@ router.get("/posts/:id", async (req, res) => {
   }
 
   return res.json(post);
+});
+
+router.post("/uploads", (req: Request, res) => {
+  upload.single("image")(req, res, (error: unknown) => {
+    if (error) {
+      const message = error instanceof Error ? error.message : "업로드 처리 중 오류가 발생했습니다.";
+      return res.status(400).json({ message });
+    }
+
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: "업로드 파일이 없습니다." });
+    }
+
+    return res.status(201).json({ url: `/uploads/${file.filename}` });
+  });
 });
 
 router.post("/posts", async (req, res) => {

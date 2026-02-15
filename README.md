@@ -18,6 +18,7 @@ Docker 기반으로 실행되는 인증 필수 일정관리 웹 애플리케이�
   - 공지사항(`NOTICE`): 관리자만 작성/수정/삭제
   - 자유게시판(`FREE`): 전체 사용자 작성 가능, 작성자 또는 관리자 수정/삭제 가능
   - 에디터: `React Quill`(무료, 오픈소스, 상용 서비스에서도 널리 사용)
+  - 게시글 상세 페이지(`/board/:id`) 및 본문 이미지 업로드(무료, 로컬 스토리지) 지원
 - 상단 네비게이션 강화: `게시판`, `관리자 대시보드` 바로가기 버튼 노출
 - 보안 강화:
   - 인증/관리자 엔드포인트 레이트 리미트 추가
@@ -34,6 +35,7 @@ Docker 기반으로 실행되는 인증 필수 일정관리 웹 애플리케이�
 - 권한 기반 접근 제어(USER / ADMIN)
 - 관리자 대시보드(사용자/전체 일정 통합 관리)
 - 게시판(공지사항/자유게시판) + 리치 텍스트 에디터
+- 게시글 상세 페이지 및 이미지 업로드
 - 주간/월간/일간 캘린더 뷰
 - Docker 컨테이너로 환경 의존성 최소화
 
@@ -199,11 +201,18 @@ Base URL: `/api`
 - `POST /board/posts`
 - `PATCH /board/posts/:id`
 - `DELETE /board/posts/:id`
+- `POST /board/uploads` (이미지 업로드, 5MB 제한)
 
 권한 규칙:
 
 - `NOTICE`: ADMIN만 작성/수정/삭제
 - `FREE`: 모든 사용자 작성 가능, 작성자 또는 ADMIN이 수정/삭제 가능
+
+이미지 업로드 정책:
+
+- 비용: 없음(로컬 파일 스토리지 사용)
+- 저장 위치: 백엔드 컨테이너 `/app/uploads` (Docker volume `board_uploads`)
+- 접근 경로: `/uploads/<filename>`
 
 시간 필드는 ISO 문자열(예: `2026-02-13T09:00:00.000Z`)을 사용합니다.
 
@@ -277,6 +286,7 @@ docker compose logs -f frontend
 - 로그인/회원가입: `http://localhost:3000/login`, `http://localhost:3000/register`
 - 일반 사용자 대시보드: `http://localhost:3000/`
 - 게시판: `http://localhost:3000/board`
+- 게시글 상세: `http://localhost:3000/board/:id`
 - 관리자 대시보드: `http://localhost:3000/admin` (ADMIN만 접근)
 
 ## 12. GitHub 저장소 생성/업로드 가이드

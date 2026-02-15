@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import path from "path";
 import { env } from "./config/env.js";
 import { requireAuth } from "./middleware/auth.js";
 import { adminRateLimiter, authRateLimiter } from "./middleware/rateLimit.js";
@@ -19,6 +20,7 @@ app.use(helmet());
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(morgan("combined"));
 app.use(express.json());
+app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "backend" });
