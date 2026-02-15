@@ -12,6 +12,8 @@ Docker 기반으로 실행되는 인증 필수 일정관리 웹 애플리케이�
 - 회원가입 / 로그인 / 사용자 정보 조회
 - JWT 인증 기반 보호 라우트
 - 로그인 사용자별 일정 CRUD
+- 권한 기반 접근 제어(USER / ADMIN)
+- 관리자 대시보드(사용자/전체 일정 통합 관리)
 - 주간/월간/일간 캘린더 뷰
 - Docker 컨테이너로 환경 의존성 최소화
 
@@ -112,7 +114,24 @@ npm run dev
 - 토큰은 프론트 로컬 스토리지에 저장
 - API 요청 시 `Authorization: Bearer <token>` 헤더 자동 추가
 - `/api/schedules/*` 는 인증 미들웨어(`requireAuth`) 통과 필수
+- `/api/admin/*` 는 인증 + `ADMIN` 권한 필수
 - 사용자 ID 기준으로 본인 일정만 조회/수정/삭제 가능
+
+### 5-1. 권한(Role)
+
+- `USER`: 본인 일정만 관리
+- `ADMIN`: 전체 사용자/전체 일정 관리 가능
+
+### 5-2. 기본 관리자 계정
+
+서버 시작 시 `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` 값으로 관리자 계정을 보장합니다.
+
+- 기본값
+  - `ADMIN_EMAIL=admin@example.com`
+  - `ADMIN_PASSWORD=admin12345`
+  - `ADMIN_NAME=System Admin`
+
+보안상 운영 환경에서는 반드시 강한 비밀번호로 변경하세요.
 
 ## 6. API 명세
 
@@ -135,6 +154,15 @@ Base URL: `/api`
   - body: `{ "title", "description?", "startAt", "endAt", "isAllDay" }`
 - `PATCH /schedules/:id`
 - `DELETE /schedules/:id`
+
+### 6-3. Admin (ADMIN 권한 필요)
+
+- `GET /admin/overview`
+- `GET /admin/users`
+- `PATCH /admin/users/:id` (권한/이름 변경)
+- `DELETE /admin/users/:id`
+- `GET /admin/schedules`
+- `DELETE /admin/schedules/:id`
 
 시간 필드는 ISO 문자열(예: `2026-02-13T09:00:00.000Z`)을 사용합니다.
 
@@ -174,6 +202,12 @@ docker compose logs -f backend
 ```bash
 docker compose logs -f frontend
 ```
+
+## 10. 화면 접근 경로
+
+- 로그인/회원가입: `http://localhost:3000/login`, `http://localhost:3000/register`
+- 일반 사용자 대시보드: `http://localhost:3000/`
+- 관리자 대시보드: `http://localhost:3000/admin` (ADMIN만 접근)
 
 ## 10. GitHub 저장소 생성/업로드 가이드
 

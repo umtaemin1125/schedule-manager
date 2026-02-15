@@ -16,6 +16,8 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import LogoutIcon from "@mui/icons-material/Logout";
+import ShieldIcon from "@mui/icons-material/Shield";
+import { Link as RouterLink } from "react-router-dom";
 import { api } from "../api/client";
 import ScheduleDialog from "../components/ScheduleDialog";
 import { useAuth } from "../contexts/AuthContext";
@@ -61,6 +63,17 @@ export default function DashboardPage() {
             Schedule Manager
           </Typography>
           <Typography sx={{ mr: 2, color: "#00384d" }}>{user?.name}</Typography>
+          {user?.role === "ADMIN" && (
+            <Button
+              component={RouterLink}
+              to="/admin"
+              startIcon={<ShieldIcon />}
+              sx={{ mr: 1 }}
+              variant="outlined"
+            >
+              관리자
+            </Button>
+          )}
           <IconButton onClick={logout} sx={{ color: "#00384d" }}><LogoutIcon /></IconButton>
         </Toolbar>
       </AppBar>
