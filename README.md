@@ -14,6 +14,11 @@ Docker 기반으로 실행되는 인증 필수 일정관리 웹 애플리케이�
 - `ADMIN/USER` 권한 분리 및 관리자 대시보드(`/admin`) 추가
 - 서버 시작 시 기본 관리자 계정 자동 보장 로직 추가
 - 관리자 통합 API 추가(`/api/admin/*`)
+- 게시판 기능 추가
+  - 공지사항(`NOTICE`): 관리자만 작성/수정/삭제
+  - 자유게시판(`FREE`): 전체 사용자 작성 가능, 작성자 또는 관리자 수정/삭제 가능
+  - 에디터: `React Quill`(무료, 오픈소스, 상용 서비스에서도 널리 사용)
+- 상단 네비게이션 강화: `게시판`, `관리자 대시보드` 바로가기 버튼 노출
 - 보안 강화:
   - 인증/관리자 엔드포인트 레이트 리미트 추가
   - CORS Origin 환경변수 분리(`CORS_ORIGIN`)
@@ -28,6 +33,7 @@ Docker 기반으로 실행되는 인증 필수 일정관리 웹 애플리케이�
 - 로그인 사용자별 일정 CRUD
 - 권한 기반 접근 제어(USER / ADMIN)
 - 관리자 대시보드(사용자/전체 일정 통합 관리)
+- 게시판(공지사항/자유게시판) + 리치 텍스트 에디터
 - 주간/월간/일간 캘린더 뷰
 - Docker 컨테이너로 환경 의존성 최소화
 
@@ -47,6 +53,7 @@ schedule-manager
 │     ├─ config/env.ts
 │     ├─ middleware/auth.ts
 │     ├─ modules/auth/auth.routes.ts
+│     ├─ modules/board/board.routes.ts
 │     ├─ modules/schedules/schedules.routes.ts
 │     └─ server.ts
 └─ frontend
@@ -59,7 +66,9 @@ schedule-manager
       ├─ components/ScheduleDialog.tsx
       ├─ pages/LoginPage.tsx
       ├─ pages/RegisterPage.tsx
-      └─ pages/DashboardPage.tsx
+      ├─ pages/DashboardPage.tsx
+      ├─ pages/BoardPage.tsx
+      └─ pages/AdminDashboardPage.tsx
 ```
 
 ## 3. 빠른 시작 (Docker 권장)
@@ -180,6 +189,21 @@ Base URL: `/api`
 - `DELETE /admin/users/:id`
 - `GET /admin/schedules`
 - `DELETE /admin/schedules/:id`
+- `GET /admin/posts`
+- `DELETE /admin/posts/:id`
+
+### 6-4. Board (인증 필요)
+
+- `GET /board/posts?type=NOTICE|FREE`
+- `GET /board/posts/:id`
+- `POST /board/posts`
+- `PATCH /board/posts/:id`
+- `DELETE /board/posts/:id`
+
+권한 규칙:
+
+- `NOTICE`: ADMIN만 작성/수정/삭제
+- `FREE`: 모든 사용자 작성 가능, 작성자 또는 ADMIN이 수정/삭제 가능
 
 시간 필드는 ISO 문자열(예: `2026-02-13T09:00:00.000Z`)을 사용합니다.
 
@@ -223,6 +247,7 @@ bash scripts/smoke-test.sh
 - ADMIN 권한 승격/조회/삭제
 - 마지막 관리자 보호 정책
 - 일정 생성/관리자 전체조회/삭제
+- 게시판 권한 시나리오(공지 작성 제한/자유게시판 작성/관리자 삭제)
 
 ### 9-2. 수동 점검 체크리스트
 
@@ -251,6 +276,7 @@ docker compose logs -f frontend
 
 - 로그인/회원가입: `http://localhost:3000/login`, `http://localhost:3000/register`
 - 일반 사용자 대시보드: `http://localhost:3000/`
+- 게시판: `http://localhost:3000/board`
 - 관리자 대시보드: `http://localhost:3000/admin` (ADMIN만 접근)
 
 ## 12. GitHub 저장소 생성/업로드 가이드

@@ -22,6 +22,7 @@ import {
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ForumIcon from "@mui/icons-material/Forum";
 import { Link as RouterLink } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../contexts/AuthContext";
@@ -47,6 +48,14 @@ interface AdminSchedule {
   user: { id: string; email: string; name: string; role: Role };
 }
 
+interface AdminPost {
+  id: string;
+  title: string;
+  type: "NOTICE" | "FREE";
+  createdAt: string;
+  user: { id: string; email: string; name: string; role: Role };
+}
+
 interface Overview {
   userCount: number;
   adminCount: number;
@@ -58,19 +67,22 @@ export default function AdminDashboardPage() {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [schedules, setSchedules] = useState<AdminSchedule[]>([]);
+  const [posts, setPosts] = useState<AdminPost[]>([]);
   const [error, setError] = useState("");
 
   const fetchAll = async () => {
     try {
       setError("");
-      const [overviewRes, usersRes, schedulesRes] = await Promise.all([
+      const [overviewRes, usersRes, schedulesRes, postsRes] = await Promise.all([
         api.get<Overview>("/admin/overview"),
         api.get<AdminUser[]>("/admin/users"),
-        api.get<AdminSchedule[]>("/admin/schedules")
+        api.get<AdminSchedule[]>("/admin/schedules"),
+        api.get<AdminPost[]>("/admin/posts")
       ]);
       setOverview(overviewRes.data);
       setUsers(usersRes.data);
       setSchedules(schedulesRes.data);
+      setPosts(postsRes.data);
     } catch {
       setError("관리자 데이터를 불러오지 못했습니다.");
     }
@@ -90,6 +102,12 @@ export default function AdminDashboardPage() {
           <Typography variant="h6" sx={{ flexGrow: 1, color: "#00384d", fontWeight: 700 }}>
             Admin Dashboard
           </Typography>
+          <Button component={RouterLink} to="/board" startIcon={<ForumIcon />} sx={{ mr: 1 }} variant="outlined">
+            게시판
+          </Button>
+          <Button component={RouterLink} to="/" sx={{ mr: 1 }} variant="outlined">
+            일정
+          </Button>
           <Typography sx={{ mr: 2, color: "#00384d" }}>{user?.name}</Typography>
           <IconButton onClick={logout} sx={{ color: "#00384d" }}><LogoutIcon /></IconButton>
         </Toolbar>
@@ -192,6 +210,42 @@ export default function AdminDashboardPage() {
                       일정 삭제
                     </Button>
                   </Box>
+                </Box>
+              ))}
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card sx={{ mt: 3 }}>
+          <CardContent>
+            <Typography variant="h6" mb={2}>전체 게시글 관리</Typography>
+            <Stack spacing={1.5}>
+              {posts.map((p) => (
+                <Box
+                  key={p.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap={2}
+                  p={1.5}
+                  border="1px solid #e8eef0"
+                  borderRadius={2}
+                >
+                  <Box>
+                    <Typography fontWeight={700}>{p.title}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {p.type} · {p.user.name} ({p.user.email}) · {new Date(p.createdAt).toLocaleString()}
+                    </Typography>
+                  </Box>
+                  <Button
+                    color="error"
+                    onClick={async () => {
+                      await api.delete(`/admin/posts/${p.id}`);
+                      await fetchAll();
+                    }}
+                  >
+                    게시글 삭제
+                  </Button>
                 </Box>
               ))}
             </Stack>

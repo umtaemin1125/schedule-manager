@@ -145,4 +145,31 @@ router.delete("/schedules/:id", async (req, res) => {
   return res.status(204).send();
 });
 
+router.get("/posts", async (_req, res) => {
+  const posts = await prisma.boardPost.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      type: true,
+      createdAt: true,
+      updatedAt: true,
+      user: { select: { id: true, email: true, name: true, role: true } }
+    }
+  });
+
+  return res.json(posts);
+});
+
+router.delete("/posts/:id", async (req, res) => {
+  const id = req.params.id;
+  const target = await prisma.boardPost.findUnique({ where: { id } });
+  if (!target) {
+    return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+  }
+
+  await prisma.boardPost.delete({ where: { id } });
+  return res.status(204).send();
+});
+
 export default router;

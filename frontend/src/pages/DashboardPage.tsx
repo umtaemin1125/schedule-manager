@@ -18,6 +18,7 @@ import AddIcon from "@mui/icons-material/Add";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ShieldIcon from "@mui/icons-material/Shield";
 import { Link as RouterLink } from "react-router-dom";
+import ForumIcon from "@mui/icons-material/Forum";
 import { api } from "../api/client";
 import ScheduleDialog from "../components/ScheduleDialog";
 import { useAuth } from "../contexts/AuthContext";
@@ -63,6 +64,15 @@ export default function DashboardPage() {
             Schedule Manager
           </Typography>
           <Typography sx={{ mr: 2, color: "#00384d" }}>{user?.name}</Typography>
+          <Button
+            component={RouterLink}
+            to="/board"
+            startIcon={<ForumIcon />}
+            sx={{ mr: 1 }}
+            variant="outlined"
+          >
+            게시판
+          </Button>
           {user?.role === "ADMIN" && (
             <Button
               component={RouterLink}

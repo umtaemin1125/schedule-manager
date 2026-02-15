@@ -4,7 +4,8 @@
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top right, #d8f3fa 0%, #f7fbfc 45%, #f7fbfc 100%);
+  background: radial-gradient(circle at top right, #f7fbff 0%, #f5f5f7 45%, #f5f5f7 100%);
+  color: #1d1d1f;
 }
 
 .auth-layout {
@@ -17,7 +18,8 @@ body {
 .auth-card {
   width: 100%;
   max-width: 460px;
-  box-shadow: 0 16px 40px rgba(10, 77, 104, 0.14);
+  box-shadow: 0 24px 40px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
 }
 
 .fc .fc-toolbar-title {

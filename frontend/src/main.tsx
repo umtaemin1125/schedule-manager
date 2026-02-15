@@ -9,15 +9,15 @@ import "./styles.css";
 const theme = createTheme({
   palette: {
     mode: "light",
-    primary: { main: "#0a4d68" },
-    secondary: { main: "#05bfdb" },
+    primary: { main: "#0a84ff" },
+    secondary: { main: "#5e5ce6" },
     background: {
-      default: "#f7fbfc",
+      default: "#f5f5f7",
       paper: "#ffffff"
     }
   },
   typography: {
-    fontFamily: "'IBM Plex Sans KR', sans-serif",
+    fontFamily: "'SF Pro Display', 'SF Pro Text', 'Pretendard', 'Apple SD Gothic Neo', sans-serif",
     h4: { fontWeight: 700 },
     h5: { fontWeight: 700 }
   },

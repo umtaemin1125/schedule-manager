@@ -13,3 +13,19 @@ export interface Schedule {
   endAt: string;
   isAllDay: boolean;
 }
+
+export interface BoardPost {
+  id: string;
+  title: string;
+  content: string;
+  type: "NOTICE" | "FREE";
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: "USER" | "ADMIN";
+  };
+}

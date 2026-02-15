@@ -67,6 +67,19 @@ const headers = { 'Content-Type': 'application/json' };
   });
   assert(r.status === 403, `user should not access admin api, got ${r.status}`);
 
+  r = await http('/board/posts', {
+    method: 'POST', headers: { ...headers, Authorization: `Bearer ${userToken}` },
+    body: JSON.stringify({ type: 'NOTICE', title: 'not allowed', content: '<p>x</p>' })
+  });
+  assert(r.status === 403, `user should not create notice, got ${r.status}`);
+
+  r = await http('/board/posts', {
+    method: 'POST', headers: { ...headers, Authorization: `Bearer ${userToken}` },
+    body: JSON.stringify({ type: 'FREE', title: 'free post', content: '<p>hello</p>' })
+  });
+  assert(r.status === 201, `user should create free post, got ${r.status}`);
+  const freePostId = r.body.id;
+
   r = await http('/admin/users', {
     headers: { Authorization: `Bearer ${superAdminToken}` }
   });
@@ -106,6 +119,13 @@ const headers = { 'Content-Type': 'application/json' };
   assert(r.status === 201, `create schedule failed: ${r.status}`);
   const scheduleId = r.body.id;
 
+  r = await http('/board/posts', {
+    method: 'POST', headers: { ...headers, Authorization: `Bearer ${secondAdminToken}` },
+    body: JSON.stringify({ type: 'NOTICE', title: 'notice post', content: '<p>notice</p>' })
+  });
+  assert(r.status === 201, `admin should create notice, got ${r.status}`);
+  const noticeId = r.body.id;
+
   r = await http('/admin/schedules', {
     headers: { Authorization: `Bearer ${secondAdminToken}` }
   });
@@ -115,6 +135,16 @@ const headers = { 'Content-Type': 'application/json' };
     method: 'DELETE', headers: { Authorization: `Bearer ${secondAdminToken}` }
   });
   assert(r.status === 204, `admin schedule delete failed: ${r.status}`);
+
+  r = await http(`/board/posts/${freePostId}`, {
+    method: 'DELETE', headers: { Authorization: `Bearer ${secondAdminToken}` }
+  });
+  assert(r.status === 204, `admin free post delete failed: ${r.status}`);
+
+  r = await http(`/board/posts/${noticeId}`, {
+    method: 'DELETE', headers: { Authorization: `Bearer ${secondAdminToken}` }
+  });
+  assert(r.status === 204, `admin notice delete failed: ${r.status}`);
 
   r = await http(`/admin/users/${adminCandidate.id}`, {
     method: 'DELETE', headers: { Authorization: `Bearer ${superAdminToken}` }

@@ -9,6 +9,7 @@ import { adminRateLimiter, authRateLimiter } from "./middleware/rateLimit.js";
 import { requireRole } from "./middleware/role.js";
 import adminRoutes from "./modules/admin/admin.routes.js";
 import authRoutes from "./modules/auth/auth.routes.js";
+import boardRoutes from "./modules/board/board.routes.js";
 import scheduleRoutes from "./modules/schedules/schedules.routes.js";
 import { ensureAdminAccount } from "./utils/bootstrapAdmin.js";
 
@@ -25,6 +26,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRateLimiter, authRoutes);
 app.use("/api/schedules", requireAuth, scheduleRoutes);
+app.use("/api/board", requireAuth, boardRoutes);
 app.use("/api/admin", adminRateLimiter, requireAuth, requireRole("ADMIN"), adminRoutes);
 
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
