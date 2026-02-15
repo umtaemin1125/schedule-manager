@@ -7,6 +7,20 @@ Docker 기반으로 실행되는 인증 필수 일정관리 웹 애플리케이�
 - `database`: PostgreSQL
 - `infra`: Docker Compose + Nginx(프론트 서빙 및 API 프록시)
 
+## Release Notes
+
+### 2026-02-15
+
+- `ADMIN/USER` 권한 분리 및 관리자 대시보드(`/admin`) 추가
+- 서버 시작 시 기본 관리자 계정 자동 보장 로직 추가
+- 관리자 통합 API 추가(`/api/admin/*`)
+- 보안 강화:
+  - 인증/관리자 엔드포인트 레이트 리미트 추가
+  - CORS Origin 환경변수 분리(`CORS_ORIGIN`)
+  - 전역 예외 처리 미들웨어 추가
+  - 마지막 관리자 권한/계정 보호 로직 추가
+- 운영 점검용 자동 스모크 테스트 스크립트 추가: `scripts/smoke-test.sh`
+
 ## 1. 주요 기능
 
 - 회원가입 / 로그인 / 사용자 정보 조회
@@ -67,6 +81,9 @@ docker compose up --build -d
 - 프론트엔드: `http://localhost:3000`
 - 백엔드 헬스체크: `http://localhost:4000/health`
 - DB: `localhost:5432` (`postgres/postgres`)
+- 기본 관리자 로그인(초기값):
+  - 이메일: `admin@example.com`
+  - 비밀번호: `admin12345`
 
 ### 3-3. 종료
 
@@ -171,7 +188,7 @@ Base URL: `/api`
 Prisma 모델 요약:
 
 - `User`
-  - `id`, `email(unique)`, `name`, `passwordHash`, `createdAt`, `updatedAt`
+  - `id`, `email(unique)`, `name`, `role(USER|ADMIN)`, `passwordHash`, `createdAt`, `updatedAt`
 - `Schedule`
   - `id`, `title`, `description`, `startAt`, `endAt`, `isAllDay`, `userId(FK)`
 
@@ -186,8 +203,35 @@ Prisma 모델 요약:
 - HTTPS 종단 및 리버스 프록시 설정
 - DB 백업 정책(스냅샷/덤프) 수립
 - 컨테이너 보안 스캔 및 이미지 고정 버전 관리
+- 민감정보는 `.env` 또는 시크릿 매니저로만 관리하고 Git 커밋 금지
 
-## 9. 문제 해결
+## 9. 테스트
+
+### 9-1. 자동 스모크 테스트 (권장)
+
+컨테이너 실행 후 아래 명령으로 핵심 시나리오를 점검합니다.
+
+```bash
+bash scripts/smoke-test.sh
+```
+
+검증 항목:
+
+- 비인증 접근 차단
+- 회원가입/로그인
+- USER의 admin API 접근 차단(403)
+- ADMIN 권한 승격/조회/삭제
+- 마지막 관리자 보호 정책
+- 일정 생성/관리자 전체조회/삭제
+
+### 9-2. 수동 점검 체크리스트
+
+- `http://localhost:3000/login` 에서 일반 사용자 로그인
+- `http://localhost:3000/admin` 접근 시 ADMIN만 진입 가능한지 확인
+- 일반 사용자 토큰으로 `/api/admin/overview` 호출 시 403 확인
+- ADMIN 계정으로 사용자 권한 변경/삭제 동작 확인
+
+## 10. 문제 해결
 
 - 포트 충돌 시: `docker compose down` 후 점유 포트 확인
 - DB 초기화가 필요하면: `docker compose down -v` 후 재기동
@@ -203,13 +247,13 @@ docker compose logs -f backend
 docker compose logs -f frontend
 ```
 
-## 10. 화면 접근 경로
+## 11. 화면 접근 경로
 
 - 로그인/회원가입: `http://localhost:3000/login`, `http://localhost:3000/register`
 - 일반 사용자 대시보드: `http://localhost:3000/`
 - 관리자 대시보드: `http://localhost:3000/admin` (ADMIN만 접근)
 
-## 10. GitHub 저장소 생성/업로드 가이드
+## 12. GitHub 저장소 생성/업로드 가이드
 
 현재 로컬 코드 기준으로 아래 순서로 업로드할 수 있습니다.
 
@@ -230,7 +274,7 @@ git push -u origin main
 
 예: `https://github.com/<username>/schedule-manager.git`
 
-## 11. 향후 확장 아이디어
+## 13. 향후 확장 아이디어
 
 - 팀/조직 단위 권한(Owner/Admin/Member)
 - 반복 일정(RRULE)

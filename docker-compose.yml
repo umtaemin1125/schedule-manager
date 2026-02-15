@@ -23,6 +23,11 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/schedule_manager?schema=public
       JWT_SECRET: ${JWT_SECRET:-change-this-super-secret-key-1234}
       JWT_EXPIRES_IN: 1d
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      AUTH_RATE_LIMIT_WINDOW_MS: ${AUTH_RATE_LIMIT_WINDOW_MS:-900000}
+      AUTH_RATE_LIMIT_MAX: ${AUTH_RATE_LIMIT_MAX:-20}
+      ADMIN_RATE_LIMIT_WINDOW_MS: ${ADMIN_RATE_LIMIT_WINDOW_MS:-60000}
+      ADMIN_RATE_LIMIT_MAX: ${ADMIN_RATE_LIMIT_MAX:-120}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin12345}
       ADMIN_NAME: ${ADMIN_NAME:-System Admin}

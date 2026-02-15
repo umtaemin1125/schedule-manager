@@ -71,6 +71,13 @@ router.patch("/users/:id", async (req, res) => {
     return res.status(400).json({ message: "자기 자신의 ADMIN 권한은 해제할 수 없습니다." });
   }
 
+  if (target.role === "ADMIN" && nextRole === "USER") {
+    const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+    if (adminCount <= 1) {
+      return res.status(400).json({ message: "마지막 관리자 권한은 해제할 수 없습니다." });
+    }
+  }
+
   const user = await prisma.user.update({
     where: { id: targetId },
     data: {
@@ -94,6 +101,13 @@ router.delete("/users/:id", async (req, res) => {
   const target = await prisma.user.findUnique({ where: { id: targetId } });
   if (!target) {
     return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+  }
+
+  if (target.role === "ADMIN") {
+    const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+    if (adminCount <= 1) {
+      return res.status(400).json({ message: "마지막 관리자는 삭제할 수 없습니다." });
+    }
   }
 
   await prisma.user.delete({ where: { id: targetId } });
